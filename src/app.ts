@@ -5,8 +5,12 @@ import multipart from "@fastify/multipart";
 const main = async () => {
   let PORT = 3000;
   if(process.env.PORT) {
+    console.log("process.env.PORT", process.env.PORT);
     PORT = parseInt(process.env.PORT);
+  }else{
+    console.log("process.env.PORT not found");
   }
+
   const app = Fastify({
     logger: true,
   });
