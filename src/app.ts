@@ -17,7 +17,7 @@ const main = async () => {
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
   });
-  app.listen({ port: port }, function (err, address) {
+  app.listen({ port: port, host: "0.0.0.0" }, function (err, address) {
     if (err) {
       app.log.error(err);
       process.exit(1);
