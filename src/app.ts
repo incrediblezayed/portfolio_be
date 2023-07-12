@@ -3,7 +3,10 @@ import router from "../src/routes/index.js";
 import cloudinary from "cloudinary";
 import multipart from "@fastify/multipart";
 const main = async () => {
-  const port = 3000;
+  let PORT = 3000;
+  if(process.env.PORT) {
+    PORT = parseInt(process.env.PORT);
+  }
   const app = Fastify({
     logger: true,
   });
@@ -17,7 +20,7 @@ const main = async () => {
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
   });
-  app.listen({ port: port, host: "0.0.0.0" }, function (err, address) {
+  app.listen({ port: PORT, host: "0.0.0.0" }, function (err, address) {
     if (err) {
       app.log.error(err);
       process.exit(1);
