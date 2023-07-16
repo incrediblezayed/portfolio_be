@@ -1,13 +1,13 @@
 import Fastify from "fastify";
-import router from "../src/routes/index.js";
+import { defaultRouter } from "../src/routes/index.js";
 import cloudinary from "cloudinary";
 import multipart from "@fastify/multipart";
 import cors from "@fastify/cors";
 const main = async () => {
   let PORT = 3000;
-  if(process.env.PORT) {
+  if (process.env.PORT) {
     PORT = parseInt(process.env.PORT);
-  }else{
+  } else {
     console.log("process.env.PORT not found");
   }
 
@@ -16,12 +16,12 @@ const main = async () => {
   });
   app.register(cors, {
     origin: "*",
-  })
+  });
   app.register(multipart, {
     attachFieldsToBody: true,
     addToBody: true,
   });
-  app.register(router, { prefix: "/api" });
+  app.register(defaultRouter, { prefix: "/api" });
   cloudinary.v2.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,

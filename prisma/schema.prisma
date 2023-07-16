@@ -51,3 +51,10 @@ model EnquiryModel {
 
   @@map(name: "enquiries")
 }
+
+model Resume {
+  id     String @id @default(auto()) @map("_id") @db.ObjectId
+  resume String
+
+  @@map(name: "resumes")
+}

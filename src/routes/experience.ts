@@ -1,7 +1,7 @@
 import { FastifyPluginCallback } from "fastify";
 import experienceController from "../controllers/experience.js";
 
-const fastifyRoute: FastifyPluginCallback = (fastify, options, done) => {
+const experienceRoute: FastifyPluginCallback = (fastify, options, done) => {
   fastify.get("/", async (req, res) => {
     try {
       const experience = await experienceController.getAllExperience();
@@ -53,4 +53,4 @@ const fastifyRoute: FastifyPluginCallback = (fastify, options, done) => {
   done();
 };
 
-export default fastifyRoute;
+export { experienceRoute };

@@ -1,7 +1,7 @@
 import { FastifyPluginCallback } from "fastify";
 import projectController from "../controllers/projects.js";
 
-const fastifyRoute: FastifyPluginCallback = (fastify, options, done) => {
+const projectRoute: FastifyPluginCallback = (fastify, options, done) => {
   fastify.get("/", async (req, res) => {
     try {
       const projects = await projectController.getAllProjects();
@@ -53,4 +53,4 @@ const fastifyRoute: FastifyPluginCallback = (fastify, options, done) => {
   done();
 };
 
-export default fastifyRoute;
+export { projectRoute };
