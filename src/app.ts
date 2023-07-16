@@ -2,10 +2,10 @@ import Fastify from "fastify";
 import router from "../src/routes/index.js";
 import cloudinary from "cloudinary";
 import multipart from "@fastify/multipart";
+import cors from "@fastify/cors";
 const main = async () => {
   let PORT = 3000;
   if(process.env.PORT) {
-    console.log("process.env.PORT", process.env.PORT);
     PORT = parseInt(process.env.PORT);
   }else{
     console.log("process.env.PORT not found");
@@ -14,6 +14,9 @@ const main = async () => {
   const app = Fastify({
     logger: true,
   });
+  app.register(cors, {
+    origin: "*",
+  })
   app.register(multipart, {
     attachFieldsToBody: true,
     addToBody: true,
@@ -33,10 +36,3 @@ const main = async () => {
 };
 
 main();
-
-/* images?.map((image, index) => {
-  return {
-    "link": image,
-    "priority": index
-  };
-}), */

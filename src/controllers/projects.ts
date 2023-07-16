@@ -4,7 +4,13 @@ const prisma = new PrismaClient();
 
 async function getAllProjects(): Promise<Project[]> {
   try {
-    const projects = await prisma.project.findMany();
+    const projects = await prisma.project.findMany({
+      orderBy: [
+        {
+          endDate: "desc",
+        }
+      ]
+    });
     return projects;
   } catch (e) {
     console.error(e);

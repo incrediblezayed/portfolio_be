@@ -28,7 +28,7 @@ model Project {
 }
 
 model WorkExperince {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  id           String    @id @default(auto()) @map("_id") @db.ObjectId
   position     String
   company      String
   website      String
@@ -36,7 +36,18 @@ model WorkExperince {
   achievements String[]
   startDate    DateTime
   endDate      DateTime?
-  createdAt    DateTime @default(now())
+  createdAt    DateTime  @default(now())
 
   @@map(name: "work_experinces")
+}
+
+model EnquiryModel {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  name      String
+  phone     String
+  email     String
+  message   String
+  createdAt DateTime @default(now())
+
+  @@map(name: "enquiries")
 }

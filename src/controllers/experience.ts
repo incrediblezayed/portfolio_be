@@ -3,7 +3,13 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 async function getAllExperience(): Promise<WorkExperince[]> {
   try {
-    const experience = await prisma.workExperince.findMany();
+    const experience = await prisma.workExperince.findMany(
+      {
+        orderBy: {
+          startDate: 'desc'
+        }
+      }
+    );
     return experience;
   } catch (e) {
     console.error(e);
@@ -13,7 +19,8 @@ async function getAllExperience(): Promise<WorkExperince[]> {
 
 async function addExperience(body: any): Promise<string> {
   try {
-    const newExp = await prisma.workExperince.create(body);
+    console.log(body);
+    const newExp = await prisma.workExperince.create({data: body});
     return `Successfully Created! Id: ${newExp.id}`;
   } catch (e) {
     console.error(e);
@@ -23,6 +30,7 @@ async function addExperience(body: any): Promise<string> {
 
 async function updateExperience(id: string, body: any): Promise<string> {
   try {
+    
     const updatedExp = await prisma.workExperince.update({
       where: { id: id },
       data: body

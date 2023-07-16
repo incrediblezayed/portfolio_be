@@ -24,7 +24,9 @@ const fastifyRoute: FastifyPluginCallback = (fastify, options, done) => {
 
   fastify.put("/:id", async (req, res) => {
     try {
-      if (!req.body) {
+      console.log(req.body);
+      console.log((req.params as any).id);
+      if (!req.body || !(req.params as any).id) {
         throw "Request body cannot be empty";
       }
       const response = await experienceController.updateExperience(
