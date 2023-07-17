@@ -6,9 +6,9 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "./node_modules/.bin/netlify-lambda serve dist",
+    "start": "ts-node --esm src/app.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "node --esm dist/app.js"
+    "dev": "node dist/app.js"
   },
   "author": "incrediblezayed",
   "license": "ISC",
