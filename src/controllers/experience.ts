@@ -30,6 +30,7 @@ async function addExperience(body: any): Promise<string> {
         website: body.website,
         location: body.location,
         achievements: body.achievements,
+        
         techStacks: {
           connect: body.techStacks.map((id: string) => ({ id: id })),
         },

@@ -8,8 +8,8 @@ async function getAllProjects(): Promise<Project[]> {
       orderBy: [
         {
           endDate: "desc",
-        }
-      ]
+        },
+      ],
     });
     return projects;
   } catch (e) {
@@ -42,6 +42,8 @@ async function createProject(body: any): Promise<string> {
     body.image = "";
     body.otherImages = [];
     console.log(body);
+    const techStacks = body.techStacks;
+    delete body.techStacks;
     const response = await prisma.project.create({ data: body });
 
     const otherImageUrl = [];
@@ -90,7 +92,13 @@ async function createProject(body: any): Promise<string> {
       }
       await prisma.project.update({
         where: { id: response.id },
-        data: { image: upload.secure_url, otherImages: otherImageUrl },
+        data: {
+          image: upload.secure_url,
+          otherImages: otherImageUrl,
+          techStacks: {
+            connect: techStacks.map((id: string) => ({ id: id })),
+          },
+        },
       });
     }
     return response.id;
