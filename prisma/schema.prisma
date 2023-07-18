@@ -20,7 +20,8 @@ model Project {
   googlePlayUrl String
   appStoreUrl   String
   githubUrl     String
-  techStacks    TechStack[]
+  techStacks    TechStack[] @relation(fields: [techStackIds], references: [id])
+  techStackIds  String[]    @db.ObjectId
   createdAt     DateTime    @default(now())
   startDate     DateTime
   endDate       DateTime
@@ -35,7 +36,8 @@ model WorkExperince {
   website      String
   location     String
   achievements String[]
-  teckStacks   TechStack[]
+  techStacks   TechStack[] @relation(fields: [techStackIds], references: [id])
+  techStackIds String[]    @db.ObjectId
   startDate    DateTime
   endDate      DateTime?
   createdAt    DateTime    @default(now())
@@ -62,15 +64,15 @@ model Resume {
 }
 
 model TechStack {
-  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  id              String          @id @default(auto()) @map("_id") @db.ObjectId
   name            String
   image           String
   link            String
-  createdAt       DateTime       @default(now())
-  WorkExperince   WorkExperince? @relation(fields: [workExperinceId], references: [id])
-  workExperinceId String?        @db.ObjectId
-  Project         Project?       @relation(fields: [projectId], references: [id])
-  projectId       String?        @db.ObjectId
+  createdAt       DateTime        @default(now())
+  WorkExperince   WorkExperince[] @relation(fields: [workExperinceId], references: [id])
+  workExperinceId String[]        @db.ObjectId
+  Project         Project[]       @relation(fields: [projectId], references: [id])
+  projectId       String[]        @db.ObjectId
 
   @@map(name: "tech_stacks")
 }
