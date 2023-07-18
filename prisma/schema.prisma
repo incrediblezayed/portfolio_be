@@ -11,7 +11,7 @@ datasource db {
 }
 
 model Project {
-  id            String   @id @default(auto()) @map("_id") @db.ObjectId
+  id            String      @id @default(auto()) @map("_id") @db.ObjectId
   name          String
   description   String
   image         String
@@ -20,7 +20,8 @@ model Project {
   googlePlayUrl String
   appStoreUrl   String
   githubUrl     String
-  createdAt     DateTime @default(now())
+  techStacks    TechStack[]
+  createdAt     DateTime    @default(now())
   startDate     DateTime
   endDate       DateTime
 
@@ -28,15 +29,16 @@ model Project {
 }
 
 model WorkExperince {
-  id           String    @id @default(auto()) @map("_id") @db.ObjectId
+  id           String      @id @default(auto()) @map("_id") @db.ObjectId
   position     String
   company      String
   website      String
   location     String
   achievements String[]
+  teckStacks   TechStack[]
   startDate    DateTime
   endDate      DateTime?
-  createdAt    DateTime  @default(now())
+  createdAt    DateTime    @default(now())
 
   @@map(name: "work_experinces")
 }
@@ -57,4 +59,18 @@ model Resume {
   resume String
 
   @@map(name: "resumes")
+}
+
+model TechStack {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  name            String
+  image           String
+  link            String
+  createdAt       DateTime       @default(now())
+  WorkExperince   WorkExperince? @relation(fields: [workExperinceId], references: [id])
+  workExperinceId String?        @db.ObjectId
+  Project         Project?       @relation(fields: [projectId], references: [id])
+  projectId       String?        @db.ObjectId
+
+  @@map(name: "tech_stacks")
 }
