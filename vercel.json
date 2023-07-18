@@ -1,0 +1,13 @@
+{
+    "name": "portfolio_be",
+    "builds": [
+        {"src": "script.js", "use": "@vercel/node"}
+    ] ,
+    "routes": 
+    [
+        {
+            "src" : "/.*",
+            "dest" : "dist/app.js"
+        }]
+
+}
