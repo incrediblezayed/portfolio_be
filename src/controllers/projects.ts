@@ -125,7 +125,7 @@ async function uploadProjectImage(body: any): Promise<string> {
     console.log(body.image[0].filename);
 
     //const stream = await v2.uploader.upload(fileData.path);
-    //console.log(stream);
+    //console.log(stream); 
     return ``;
   } catch (e) {
     throw e;
