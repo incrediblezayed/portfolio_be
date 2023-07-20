@@ -19,12 +19,15 @@ const defaultRouter: FastifyPluginCallback = (fastify, options, done) => {
     var hash = crypto.createHash("sha256");
     const json = JSON.stringify(request.body);
     const encoded = Buffer.from(json).toString("base64");
+    console.log(`Base64 Payload: ${encoded}`);
     const saltKey = "cc2f75ad-01c2-4417-92f8-32964ce8d12d";
     const saltIndex = "1";
     const dataToEncode = encoded + "/pg/v1/pay" + saltKey;
     hash.update(dataToEncode);
     const hashValue = hash.digest("hex");
+    console.log(`sha256 Value: ${hashValue}`);
     const headerVerification = hashValue + "###" + saltIndex;
+    console.log(`Header Verification: ${headerVerification}`);
     const headers = {
       accept: "application/json",
       "Content-Type": "application/json",
@@ -33,7 +36,7 @@ const defaultRouter: FastifyPluginCallback = (fastify, options, done) => {
     try {
       const response = await axios.post(
         "https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/pay",
-        request.body,
+        encoded,
         {
           headers: headers,
         }
