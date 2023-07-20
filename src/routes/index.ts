@@ -15,7 +15,7 @@ const defaultRouter: FastifyPluginCallback = (fastify, options, done) => {
   fastify.register(resumeRoute, { prefix: "/resume" });
   fastify.register(techStackRouter, { prefix: "/techStacks" });
 
-  fastify.post("/pay", async (request, reply) => {
+  fastify.post("/pay/", async (request, reply) => {
     var hash = crypto.createHash("sha256");
     const json = JSON.stringify(request.body);
     const encoded = Buffer.from(json).toString("base64");
