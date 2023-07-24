@@ -7,6 +7,7 @@ import { techStackRouter } from "./techStack.js";
 import axios from "axios";
 import crypto from "crypto";
 import { url } from "inspector";
+import { PrismaClient } from "@prisma/client";
 
 const defaultRouter: FastifyPluginCallback = (fastify, options, done) => {
   fastify.register(projectRoute, { prefix: "/projects" });
@@ -19,34 +20,62 @@ const defaultRouter: FastifyPluginCallback = (fastify, options, done) => {
     var hash = crypto.createHash("sha256");
     const json = JSON.stringify(request.body);
     const encoded = Buffer.from(json).toString("base64");
-    console.log(`Base64 Payload: ${encoded}`);
-    const saltKey = "cc2f75ad-01c2-4417-92f8-32964ce8d12d";
+    const saltKey = process.env.SALT_KEY as string;
     const saltIndex = "1";
     const dataToEncode = encoded + "/pg/v1/pay" + saltKey;
     hash.update(dataToEncode);
     const hashValue = hash.digest("hex");
-    console.log(`sha256 Value: ${hashValue}`);
     const headerVerification = hashValue + "###" + saltIndex;
-    console.log(`Header Verification: ${headerVerification}`);
+
+    const requestBody = {
+      request: encoded,
+    };
+
     const headers = {
       accept: "application/json",
       "Content-Type": "application/json",
-      "X-VERIFY": headerVerification,
+      "X-Verify": headerVerification,
     };
     try {
       const response = await axios.post(
-        "https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/pay",
-        encoded,
+        process.env.PHONEPE_URL as string,
+        requestBody,
         {
           headers: headers,
         }
       );
-      reply.send(response);
+      reply.send(response.data);
     } catch (e) {
-      console.log(e);
+      console.log("Api Error", e);
       reply.send(e);
     }
   });
+  fastify.post("/addJob/", async (request, reply) => {
+    const job = request.body;
+    const response = await new PrismaClient().jobModel.create({
+      data: job as any,
+    });
+    console.log("response", response);
+    reply.send(response);
+  });
+
+  fastify.get("/getJobs/", async (request, reply) => {
+    const response = await new PrismaClient().jobModel.findMany();
+    console.log("response", response);
+    reply.send(response);
+  });
+
+  fastify.post("/phonePeTest/", async (request, reply) => {
+    const body = request.body;
+    console.log("body", body);
+    await new PrismaClient().phonePeResponse.create({
+      data: {
+        data: body as any,
+      },
+    });
+    reply.send(body);
+  });
+
   done();
 };
 

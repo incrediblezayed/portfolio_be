@@ -76,3 +76,20 @@ model TechStack {
 
   @@map(name: "tech_stacks")
 }
+
+model JobModel {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  title     String
+  location  String
+  status    String
+  createdAt DateTime @default(now())
+
+  @@map(name: "jobs")
+}
+
+model PhonePeResponse {
+  id   String @id @default(auto()) @map("_id") @db.ObjectId
+  data Json
+
+  @@map(name: "phone_pe_responses")
+}
