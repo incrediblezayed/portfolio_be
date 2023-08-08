@@ -39,6 +39,23 @@ const experienceRoute: FastifyPluginCallback = (fastify, options, done) => {
     }
   });
 
+  fastify.put("/setActive/:id", async (req, res) => {
+    try {
+      console.log(req.body);
+      console.log((req.params as any).id);
+      if (!req.body || !(req.params as any).id) {
+        throw "Request body cannot be empty";
+      }
+      const response = await experienceController.updateActive(
+        (req.params as any).id,
+        (req.body as any).isActive
+      );
+      res.status(200).send(response);
+    } catch (error) {
+      res.status(500).send(error);
+    }
+  });
+
   fastify.delete("/:id", async (req, res) => {
     try {
       const response = await experienceController.deleteExperience(

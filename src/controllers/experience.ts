@@ -30,7 +30,7 @@ async function addExperience(body: any): Promise<string> {
         website: body.website,
         location: body.location,
         achievements: body.achievements,
-        
+
         techStacks: {
           connect: body.techStacks.map((id: string) => ({ id: id })),
         },
@@ -67,6 +67,23 @@ async function updateExperience(id: string, body: any): Promise<string> {
   }
 }
 
+async function updateActive(id: string, isActive: any): Promise<string> {
+  try {
+    console.log(isActive);
+    console.log(id);
+    const updatedExp = await prisma.workExperince.update({
+      where: { id: id },
+      data: {
+        isActive: isActive,
+      },
+    });
+    return `Successfully Updated! Id: ${updatedExp.id}`;
+  } catch (e) {
+    console.error(e);
+    throw e;
+  }
+}
+
 async function deleteExperience(id: string): Promise<string> {
   try {
     const deletedExp = await prisma.workExperince.delete({
@@ -83,5 +100,6 @@ export default {
   getAllExperience,
   addExperience,
   updateExperience,
+  updateActive,
   deleteExperience,
 };

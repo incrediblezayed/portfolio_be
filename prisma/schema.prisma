@@ -36,6 +36,7 @@ model WorkExperince {
   website      String
   location     String
   achievements String[]
+  isActive     Boolean     @default(true)
   techStacks   TechStack[] @relation(fields: [techStackIds], references: [id])
   techStackIds String[]    @db.ObjectId
   startDate    DateTime
