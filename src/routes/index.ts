@@ -4,8 +4,7 @@ import { experienceRoute } from "./experience.js";
 import { contactRoute } from "./contact.js";
 import { resumeRoute } from "./resume.js";
 import { techStackRouter } from "./techStack.js";
-import axios from "axios";
-import crypto from "crypto";
+import { payRoute } from "./pay.js";
 import { url } from "inspector";
 import { PrismaClient } from "@prisma/client";
 
@@ -19,6 +18,8 @@ const defaultRouter: FastifyPluginCallback = (fastify, options, done) => {
   fastify.register(contactRoute, { prefix: "/contact" });
   fastify.register(resumeRoute, { prefix: "/resume" });
   fastify.register(techStackRouter, { prefix: "/techStacks" });
+  fastify.register(payRoute, { prefix: "/phonePe" });
+
   done();
 };
 
