@@ -1,4 +1,4 @@
-import axios, { AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosResponse } from "axios";
 import crypto from "crypto";
 
 function getXVerify(body: any, saltKey: string): string {
@@ -47,12 +47,22 @@ async function pay(req: any): Promise<any> {
     accept: "application/json",
     "X-VERIFY": xVerify,
   };
-  const response = await axios.post(
-    url!,
-    JSON.stringify({ request: payload }),
-    { headers: headers }
-  );
-  return response.data;
+
+  try {
+    const response = await axios.post(
+      url!,
+      JSON.stringify({ request: payload }),
+      { headers: headers }
+    );
+    return response.data;
+  } catch (e) {
+    console.error("Error", (e as any)?.response?.data);
+    if (e instanceof AxiosError) {
+      return e.response?.data;
+    } else {
+      return e;
+    }
+  }
 }
 
 export default {
