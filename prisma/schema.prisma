@@ -69,7 +69,7 @@ model TechStack {
   name            String
   image           String
   link            String
-  color           Int
+  color           Int             @default(4278190080)
   createdAt       DateTime        @default(now())
   WorkExperince   WorkExperince[] @relation(fields: [workExperinceId], references: [id])
   workExperinceId String[]        @db.ObjectId
