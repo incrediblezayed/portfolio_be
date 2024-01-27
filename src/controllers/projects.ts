@@ -48,7 +48,6 @@ async function createProject(body: any): Promise<string> {
 
     const otherImageUrl = [];
     if (image) {
-      console.log("uploading image");
       var upload: UploadApiResponse = await new Promise((resolve, reject) => {
         v2.uploader
           .upload_stream(
