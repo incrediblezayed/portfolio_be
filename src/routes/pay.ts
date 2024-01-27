@@ -19,6 +19,16 @@ const payRoute: FastifyPluginCallback = (fastify, options, done) => {
     const response = await paymentController.payTest(req);
     res.send(response);
   });
+
+  fastify.get("/checkPaymentStatusGhartak/:transactionId", async (req, res) => {
+    const response = await paymentController.checkPaymentStatus(
+      process.env.MERCHANT_ID_GHARTAK!,
+      (req.params as any).transactionId,
+      process.env.SALT_KEY_GHARTAK
+    );
+    res.send(response);
+  });
+
   done();
 };
 

@@ -39,7 +39,7 @@ async function payTest(req: any): Promise<any> {
 async function pay(req: any, saltKey: string | undefined): Promise<any> {
   const payload = getPayLoad(req.body);
   const xVerify = getXVerify(req.body, saltKey!);
-  const url = process.env.PHONEPE_URL;
+  const url = process.env.PHONEPE_URL + '/apis/hermes/pg/v1/pay';
   const headers = {
     "Content-Type": "application/json",
     accept: "application/json",
@@ -63,7 +63,28 @@ async function pay(req: any, saltKey: string | undefined): Promise<any> {
   }
 }
 
+async function checkPaymentStatus(merchantId: string, merchantTransactionId: string, saltKey: string | undefined) : Promise<any> {
+  try {
+    const gateway = `/pg/v1/status/${merchantId}/${merchantTransactionId}`;
+    const xVerify = getXVerify(gateway, saltKey!);
+    const headers = {
+      'X-MERCHANT-ID': merchantId,
+      "X-VERIFY": xVerify,
+    };
+    const url = process.env.PHONEPE_URL + gateway;
+    const response = await axios.get(url, { headers: headers });
+    return response.data;
+  } catch(e) {
+    if (e instanceof AxiosError) {
+      return e.response?.data;
+    } else {
+      return e;
+    }
+  }
+}
+
 export default {
   pay,
   payTest,
+  checkPaymentStatus
 };
