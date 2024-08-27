@@ -17,6 +17,10 @@ async function createTechStack(body: any) {
         })
         .end(image);
     });
+    const color = body.color;
+    if (typeof color === "string") {
+      body.color = parseInt(color);
+    }
     if (upload.error) throw new Error("Error uploading banner image");
     body.image = upload.secure_url;
     const response = await prisma.techStack.create({ data: body });
