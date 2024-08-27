@@ -54,6 +54,7 @@ async function getTechStackById(id: string): Promise<TechStack | null> {
 
 async function updateTechStack(id: string, body: any): Promise<TechStack> {
   try {
+    if (body.image) {
     const image = body.image[0].data;
     if (image) {
       const upload: UploadApiResponse = await new Promise((resolve, reject) => {
@@ -69,6 +70,7 @@ async function updateTechStack(id: string, body: any): Promise<TechStack> {
       });
       if (upload.error) throw new Error("Error uploading banner image");
       body.image = upload.secure_url;
+      }
     }
     const color = body.color;
     if (typeof color === "string") {
