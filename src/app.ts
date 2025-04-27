@@ -1,7 +1,7 @@
 import Fastify from "fastify";
 import { defaultRouter } from "../src/routes/index.js";
 import cloudinary from "cloudinary";
-import multipart from "@fastify/multipart";
+import multipart, { FastifyMultipartBaseOptions, FastifyMultipartOptions } from "@fastify/multipart";
 import cors from "@fastify/cors";
 const main = async () => {
   let PORT = 3000;
@@ -17,10 +17,14 @@ const main = async () => {
   app.register(cors, {
     origin: "*",
   });
+
+  
   app.register(multipart, {
     attachFieldsToBody: true,
-    addToBody: true,
-  });
+    sharedSchemaId: 'MultipartFileType',
+  }),
+
+
   app.register(defaultRouter, { prefix: "/api" });
   cloudinary.v2.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,

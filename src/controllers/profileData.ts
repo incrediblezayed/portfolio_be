@@ -1,91 +1,102 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 import { PrismaClient, Prisma, ProfileData } from '@prisma/client';
 import { UploadApiResponse, v2 as cloudinary } from 'cloudinary';
+import { MultipartFile } from '@fastify/multipart';
 
 const prisma = new PrismaClient();
 
-// Interface for multipart form data
-interface MultipartFile {
-    data: Buffer;
-    filename: string;
-    encoding: string;
-    mimetype: string;
-    limit: boolean;
-}
-
-// Combine Prisma input type with potential file upload field
-interface ProfileDataPayload extends Omit<Prisma.ProfileDataCreateInput, 'image'> { 
-  images?: MultipartFile[]; 
-}
-
 // Create ProfileData (Refactored)
-export const createProfileData = async (request: FastifyRequest<{ Body: ProfileDataPayload }>, reply: FastifyReply): Promise<void> => {
-  let createdProfileData: ProfileData | null = null; 
+export const createProfileData = async (request: FastifyRequest<{ Body:  any }>, reply: FastifyReply): Promise<void> => {
   try {
-    const { images, ...restOfBody } = request.body;
-    const imageFile = images?.[0]; 
-
-    if (imageFile && imageFile.data) {
-      try {
-        const uploadResult: UploadApiResponse = await new Promise((resolve, reject) => {
-          const uploadStream = cloudinary.uploader.upload_stream(
-            { folder: `profile/${Date.now()}` }, 
-            (error, result) => {
-              if (result) {
-                resolve(result);
-              } else {
-                reject(error || new Error('Cloudinary upload failed'));
-              }
-            }
-          );
-          uploadStream.end(imageFile.data);
-        });
-
-        let prismaData: Prisma.ProfileDataCreateInput;
+    // 1. Extract data from request - getting the raw form fields
+    const body = request.body as any;
+    
+    // Get the image buffer
+    const imageFile = await body.image.toBuffer();
+    
+    // 2. Check if image exists
+    if (!imageFile) {
+      reply.status(400).send({ error: 'Profile image is required.' });
+      return;
+    }
+    
+    // 3. Extract only primitive values from each field to avoid circular references
+    // For each form field, extract just the value property (which contains the actual data)
+    const name = body.name?.value || '';
+    const title = body.title?.value || '';
+    const tagline = body.tagline?.value || '';
+    const resumeUrl = body.resumeUrl?.value || '';
+    const email = body.email?.value || '';
+    
+    // 4. Parse socialLinks
+    let socialLinks;
     try {
-      const socialLinks = typeof restOfBody.socialLinks === 'string' ? JSON.parse(restOfBody.socialLinks) : restOfBody.socialLinks;
-      prismaData = { ...restOfBody, socialLinks, image: uploadResult.url };
+      // Get the raw string value first
+      const socialLinksValue = body.socialLinks?.value;
+      socialLinks = typeof socialLinksValue === 'string' 
+        ? JSON.parse(socialLinksValue) 
+        : {}; // Default to empty object if not provided
     } catch (parseError) {
       console.error('Error parsing socialLinks:', parseError);
       reply.status(400).send({ error: 'Invalid format for socialLinks' });
       return;
     }
+    
+    // 4. Upload image to Cloudinary
+    let uploadResult: UploadApiResponse;
+    try {
+      uploadResult = await new Promise((resolve, reject) => {
+        const uploadStream = cloudinary.uploader.upload_stream(
+          { folder: `profile/${Date.now()}` },
+          (error, result) => {
+            if (result) {
+              resolve(result);
+            } else {
+              reject(error || new Error('Cloudinary upload failed'));
+            }
+          }
+        );
+        uploadStream.end(imageFile);
+      });
+    } catch (uploadError: any) {
+      console.error('Cloudinary upload error:', uploadError);
+      reply.status(500).send({ 
+        error: 'Failed to upload profile image', 
+        details: uploadError.message 
+      });
+      return;
+    }
+    // 5. Create database record with image URL using our clean extracted values
+    const prismaData: Prisma.ProfileDataCreateInput = {
+      name,
+      title,
+      tagline,
+      resumeUrl,
+      email,
+      socialLinks,
+      image: uploadResult.url
+    };
+    
+    console.log('Prisma data object:', prismaData);
 
-    createdProfileData = await prisma.profileData.create({
+    const createdProfileData = await prisma.profileData.create({
       data: prismaData,
     });
-
-    // Explicit check to ensure creation was successful before proceeding
+    
     if (!createdProfileData) {
       throw new Error('Profile data creation failed unexpectedly.');
     }
-
+    
+    // 6. Return successful response
     reply.status(201).send(createdProfileData);
-
-  } catch (uploadError: any) {
-    console.error('Cloudinary upload error after create:', uploadError);
-    reply.status(500).send({ 
-      message: 'Profile created, but image upload failed.', 
-          details: uploadError.message,
-          profileData: createdProfileData 
-        });
-    return; 
-  }
-} else {
-  // If image is required, you might want to handle this case differently
-  // reply.status(400).send({ error: 'Profile image is required.' });
-  // return;
-    }
-
-    reply.status(201).send(createdProfileData);
-
+    
   } catch (error: any) {
     console.error('Create Profile Data Error:', error);
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-        if (error.code === 'P2002') {
-            reply.status(409).send({ error: 'Profile data conflict', details: 'A profile record might already exist or violates constraints.' });
-            return;
-        }
+      if (error.code === 'P2002') {
+        reply.status(409).send({ error: 'Profile data conflict', details: 'A profile record might already exist or violates constraints.' });
+        return;
+      }
     }
     reply.status(500).send({ error: 'Failed to create profile data', details: error.message });
   }
@@ -105,55 +116,82 @@ export const getProfileData = async (request: FastifyRequest, reply: FastifyRepl
   }
 };
 
-// Update ProfileData (Refactored)
-interface ProfileDataUpdatePayload extends Omit<Prisma.ProfileDataUpdateInput, 'image'> { 
-    images?: MultipartFile[]; 
-}
-export const updateProfileData = async (request: FastifyRequest<{ Params: { id: string }, Body: ProfileDataUpdatePayload }>, reply: FastifyReply): Promise<void> => {
+
+export const updateProfileData = async (request: FastifyRequest<{ Params: { id: string }, Body:  any }>, reply: FastifyReply): Promise<void> => {
   const { id } = request.params;
   let updatedProfileData: ProfileData | null = null; 
 
   try {
-    const { images, ...restOfBody } = request.body;
-    const imageFile = images?.[0]; 
-
-    let updateData: Prisma.ProfileDataUpdateInput = { ...restOfBody };
-    if (updateData.socialLinks && typeof updateData.socialLinks === 'string') {
-        try {
-            updateData.socialLinks = JSON.parse(updateData.socialLinks);
-        } catch (parseError) {
-            console.error('Error parsing socialLinks during update:', parseError);
-            reply.status(400).send({ error: 'Invalid format for socialLinks' });
-            return;
+    // Extract data from request - getting the raw form fields
+    const body = request.body as any;
+    
+    // Extract primitive values to avoid circular references
+    const name = body.name?.value || '';
+    const title = body.title?.value || '';
+    const tagline = body.tagline?.value || '';
+    const resumeUrl = body.resumeUrl?.value || '';
+    const email = body.email?.value || '';
+    
+    // Parse socialLinks
+    let socialLinks;
+    try {
+        const socialLinksValue = body.socialLinks?.value;
+        if (socialLinksValue && typeof socialLinksValue === 'string') {
+            socialLinks = JSON.parse(socialLinksValue);
         }
-    } 
+    } catch (parseError) {
+        console.error('Error parsing socialLinks during update:', parseError);
+        reply.status(400).send({ error: 'Invalid format for socialLinks' });
+        return;
+    }
+    
+    // Create clean update data object with primitive values
+    let updateData: Prisma.ProfileDataUpdateInput = {
+        name,
+        title,
+        tagline,
+        resumeUrl,
+        email
+    };
+    
+    // Only include socialLinks if it was provided and parsed successfully
+    if (socialLinks) {
+        updateData.socialLinks = socialLinks;
+    }
 
+    // First update with the basic data
     updatedProfileData = await prisma.profileData.update({
       where: { id },
       data: updateData,
     });
 
-    if (imageFile && imageFile.data) {
-       try {
-        const uploadResult: UploadApiResponse = await new Promise((resolve, reject) => {
-          const uploadStream = cloudinary.uploader.upload_stream(
-            { folder: `profile/${id}`, invalidate: true }, 
-            (error, result) => {
-              if (result) {
-                resolve(result);
-              } else {
-                reject(error || new Error('Cloudinary upload failed'));
-              }
-            }
-          );
-          uploadStream.end(imageFile.data);
-        });
-
-        updatedProfileData = await prisma.profileData.update({
-          where: { id },
-          data: { image: uploadResult.secure_url }, 
-        });
+    // 3. Check if an image was provided and handle upload
+    if (body.image) {
+      try {
+        // Get image buffer
+        const imageBuffer = await body.image.toBuffer();
         
+        if (imageBuffer) {
+          // Upload to Cloudinary
+          const uploadResult: UploadApiResponse = await new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+              { folder: `profile/${id}`, invalidate: true }, // Overwrite if exists
+              (error, result) => {
+                if (result) {
+                  resolve(result);
+                } else {
+                  reject(error || new Error('Cloudinary upload failed'));
+                }
+              }
+            );
+            uploadStream.end(imageBuffer);
+          });
+
+          updatedProfileData = await prisma.profileData.update({
+            where: { id },
+            data: { image: uploadResult.secure_url }, 
+          });
+        }
       } catch (uploadError: any) {
          console.error('Cloudinary upload error during update:', uploadError);
          reply.status(500).send({ 

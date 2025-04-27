@@ -1,1 +1,0 @@
-{"version":"1.0.0","name":"portfolio_be","dependencies":{"@fastify/cors":{"version":"8.3.0"},"@fastify/multipart":{"version":"7.7.0"},"@prisma/client":{"version":"5.0.0"},"cloudinary":{"version":"1.37.2"},"fastify":{"version":"4.18.0"}}}

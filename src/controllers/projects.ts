@@ -34,7 +34,8 @@ async function getProjectById(id: string): Promise<Project | null> {
 
 async function createProject(body: any): Promise<string> {
   try {
-    console.log(body);
+    // console.log(body);
+    console.log(body.image);
     const image = body.image[0];
     console.log(image);
     const otherImages = body.otherImages;
