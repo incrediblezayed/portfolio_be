@@ -15,15 +15,15 @@ interface MultipartFile {
 
 // Combine Prisma input type with potential file upload field
 interface ProfileDataPayload extends Omit<Prisma.ProfileDataCreateInput, 'image'> { // Omit imageUrl as it's handled separately
-  image?: MultipartFile[]; // Optional image field from multipart
+  images?: MultipartFile[]; // Optional image field from multipart
 }
 
 // Create ProfileData
 export const createProfileData = async (request: FastifyRequest<{ Body: ProfileDataPayload }>, reply: FastifyReply): Promise<void> => {
   try {
-    const { image, ...restOfBody } = request.body;
+    const { images, ...restOfBody } = request.body;
     let imageUrl: string = ''; // Initialize required imageUrl
-    let imageFile: MultipartFile | undefined = undefined;
+    const image = images![0]
 
     // Ensure 'socialLinks' is handled correctly if it's part of the payload and needs parsing
     // Example: if socialLinks is sent as a stringified JSON
@@ -37,17 +37,8 @@ export const createProfileData = async (request: FastifyRequest<{ Body: ProfileD
       return;
     }
 
-    // Check if image file is present
-    if (image && image[0] && image[0].data) {
-      imageFile = image[0];
-    } else {
-        // If image is required for creation (adjust based on requirements)
-        reply.status(400).send({ error: 'Profile image is required.' });
-        return;
-    }
-
     // Upload image *first* to get the URL
-    if (imageFile) { 
+    if (image) { 
         try {
             const uploadResult: UploadApiResponse = await new Promise((resolve, reject) => {
                 const uploadStream = cloudinary.uploader.upload_stream(
@@ -60,7 +51,7 @@ export const createProfileData = async (request: FastifyRequest<{ Body: ProfileD
                         }
                     }
                 );
-                uploadStream.end(imageFile.data);
+                uploadStream.end(image.data);
             });
             imageUrl = uploadResult.secure_url;
             prismaData.image = imageUrl; // Set the actual imageUrl
