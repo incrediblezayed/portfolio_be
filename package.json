@@ -9,9 +9,10 @@
   },
   "scripts": {
     "build": "npm i && npx prisma generate && tsc",
-    "start": "NODE_OPTIONS=--experimental-specifier-resolution=node ts-node --esm src/app.ts",
+    "start": "ts-node --esm src/app.ts",
+    "start-ts": "tsx src/app.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsx src/app.ts"
+    "dev": "node src/app.js"
   },
   "author": "incrediblezayed",
   "license": "ISC",
