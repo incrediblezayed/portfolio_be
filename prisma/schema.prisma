@@ -116,6 +116,7 @@ model ProfileData {
   resumeUrl   String
   email       String
   socialLinks Json
+  image    String
   createdAt   DateTime          @default(now())
 
   @@map(name: "profile_data")
