@@ -131,10 +131,80 @@ async function uploadProjectImage(body: any): Promise<string> {
   }
 }
 
+async function updateProject(id: string, body: any): Promise<string> {
+  try {
+    const updateData: any = { ...body };
+    let imageUrl = body.image;
+    let otherImageUrls = body.otherImages;
+    const techStacks = body.techStacks;
+    delete updateData.techStacks;
+    delete updateData.image;
+    delete updateData.otherImages;
+
+    // Handle image upload if new image data is provided
+    if (body.image && body.image[0] && body.image[0].data) {
+      const upload: UploadApiResponse = await new Promise((resolve, reject) => {
+        v2.uploader.upload_stream(
+          { folder: `projects/${id}` },
+          (error, result) => {
+            if (result) {
+              resolve(result);
+            } else {
+              reject(error);
+            }
+          }
+        ).end(body.image[0].data);
+      });
+      if (upload.error) throw new Error("Error uploading banner image");
+      imageUrl = upload.secure_url;
+    }
+
+    // Handle otherImages upload if new image data is provided
+    if (Array.isArray(body.otherImages) && body.otherImages.length > 0 && body.otherImages[0].data) {
+      otherImageUrls = [];
+      for (const otherImage of body.otherImages) {
+        const otherUpload: UploadApiResponse = await new Promise((resolve, reject) => {
+          v2.uploader.upload_stream(
+            { folder: `projects/${id}/otherImages` },
+            (error, result) => {
+              if (result) {
+                resolve(result);
+              } else {
+                reject(error);
+              }
+            }
+          ).end(otherImage.data);
+        });
+        if (otherUpload.error) throw new Error("Error uploading other image");
+        otherImageUrls.push(otherUpload.secure_url);
+      }
+    }
+
+    // Prepare update object
+    if (imageUrl) updateData.image = imageUrl;
+    if (otherImageUrls) updateData.otherImages = otherImageUrls;
+    if (techStacks) {
+      updateData.techStacks = {
+        set: [], // disconnect all first
+        connect: techStacks.map((id: string) => ({ id })),
+      };
+    }
+
+    const updated = await prisma.project.update({
+      where: { id },
+      data: updateData,
+    });
+    return updated.id;
+  } catch (e) {
+    throw e;
+  }
+}
+
 export default {
   getAllProjects,
   getProjectById,
   createProject,
   deleteProject,
   uploadProjectImage,
+  updateProject,
 };

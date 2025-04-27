@@ -89,9 +89,34 @@ model JobModel {
   @@map(name: "jobs")
 }
 
+
+
 model PhonePeResponse {
   id   String @id @default(auto()) @map("_id") @db.ObjectId
   data Json
 
   @@map(name: "phone_pe_responses")
+}
+
+
+model Todo {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  title     String
+  status    String
+  createdAt DateTime @default(now())
+
+  @@map(name: "todos")
+}
+
+model ProfileData {
+  id          String            @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  title       String
+  tagline     String
+  resumeUrl   String
+  email       String
+  socialLinks Json
+  createdAt   DateTime          @default(now())
+
+  @@map(name: "profile_data")
 }

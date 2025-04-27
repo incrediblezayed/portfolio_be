@@ -37,6 +37,16 @@ const projectRoute: FastifyPluginCallback = (fastify, options, done) => {
       const success = await projectController.deleteProject(
         (req.params as any).id
       );
+      res.code(200).send(success);
+    } catch (e) {
+      res.code(500).send(`Internal Server Error ${e}`);
+    }
+  });
+
+  fastify.put("/:id", async (req, res) => {
+    try {
+      const updated = await projectController.updateProject((req.params as any).id, req.body);
+      res.code(200).send(updated);
     } catch (e) {
       res.code(500).send(`Internal Server Error ${e}`);
     }
@@ -45,6 +55,7 @@ const projectRoute: FastifyPluginCallback = (fastify, options, done) => {
   fastify.post("/uploadProjectImage/", async (req, res) => {
     try {
       const success = await projectController.uploadProjectImage(req.body);
+      res.code(200).send(success);
     } catch (e) {
       res.code(500).send(`Internal Server Error ${e}`);
     }
