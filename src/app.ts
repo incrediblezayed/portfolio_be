@@ -1,8 +1,8 @@
+import cors from "@fastify/cors";
+import multipart from "@fastify/multipart";
+import cloudinary from "cloudinary";
 import Fastify from "fastify";
 import { defaultRouter } from "../src/routes/index.js";
-import cloudinary from "cloudinary";
-import multipart, { FastifyMultipartBaseOptions, FastifyMultipartOptions } from "@fastify/multipart";
-import cors from "@fastify/cors";
 const main = async () => {
   let PORT = 3000;
   if (process.env.PORT) {
@@ -15,7 +15,7 @@ const main = async () => {
     logger: true,
   });
   app.register(cors, {
-    origin: "*",
+    origin: process.env.CORS_WHITELIST,
   });
 
   
