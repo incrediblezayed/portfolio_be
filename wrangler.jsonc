@@ -1,0 +1,6 @@
+{
+    "name": "portfolio-backend",
+    "compatibility_date": "2025-07-27",
+    "compatibility_flags": ["nodejs_compat"],
+    "main": "src/app.ts"
+}
