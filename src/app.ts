@@ -14,8 +14,13 @@ const main = async () => {
   const app = Fastify({
     logger: true,
   });
+
+  const corsOrigins = process.env.CORS_WHITELIST;
+
+  const origins = corsOrigins?.split(",");
+
   app.register(cors, {
-    origin: process.env.CORS_WHITELIST,
+    origin: origins,
   });
 
   
